@@ -229,8 +229,8 @@ public class SwiftSpeechToTextPlugin: NSObject, FlutterPlugin {
             setupRecognizerForLocale(locale: getLocale(localeStr))
             listeningSound?.play()
             rememberedAudioCategory = self.audioSession.category
-            try self.audioSession.setCategory(AVAudioSession.Category.playAndRecord, options: .defaultToSpeaker)
-            try self.audioSession.setMode(AVAudioSession.Mode.default)
+            try self.audioSession.setCategory(AVAudioSession.Category.playAndRecord)
+            try self.audioSession.setMode(AVAudioSession.Mode.measurement)
             try self.audioSession.setActive(true, options: .notifyOthersOnDeactivation)
             let inputNode = self.audioEngine.inputNode
             self.currentRequest = SFSpeechAudioBufferRecognitionRequest()
