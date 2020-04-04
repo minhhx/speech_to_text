@@ -13,6 +13,7 @@ import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer.createSpeechRecognizer
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.media.AudioManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.MethodCall
@@ -169,6 +170,7 @@ public class SpeechToTextPlugin :
             Log.e(logTag, "Unexpected exception", exc)
             result.error(SpeechToTextErrors.unknown.name,
                     "Unexpected exception", exc.localizedMessage)
+            muteAudio(shouldMute = false)
         }
     }
 
@@ -215,10 +217,19 @@ public class SpeechToTextPlugin :
         return !initializedSuccessfully
     }
 
+    private fun muteAudio(shouldMute: Boolean)
+    {
+        val audioManager: AudioManager = pluginContext?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val muteValue = if (shouldMute) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE
+        audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, muteValue, 0)
+    }
+
     private fun startListening(result: Result, languageTag: String, partialResults: Boolean) {
         if (sdkVersionTooLow(result) || isNotInitialized(result)) {
             return
         }
+
+        muteAudio(shouldMute = true)
         debugLog("Start listening")
         setupRecognizerIntent(languageTag, partialResults)
         handler.post {
@@ -243,6 +254,7 @@ public class SpeechToTextPlugin :
         }
         notifyListening(isRecording = false)
         result.success(true)
+        muteAudio(shouldMute = false)
         debugLog("Stop listening done")
     }
 
@@ -258,6 +270,7 @@ public class SpeechToTextPlugin :
         }
         notifyListening(isRecording = false)
         result.success(true)
+        muteAudio(shouldMute = false)
         debugLog("Cancel listening done")
     }
 
@@ -456,6 +469,7 @@ public class SpeechToTextPlugin :
             else -> "error_unknown"
         }
         sendError(errorMsg)
+        muteAudio(shouldMute = false)
     }
 
     private fun debugLog( msg: String ) {
