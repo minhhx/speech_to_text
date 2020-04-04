@@ -233,6 +233,7 @@ class _MyAppState extends State<MyApp> {
   void startListening() {
     lastWords = "";
     lastError = "";
+    speech.mute(shouldMute: true);
     speech.listen(
         onResult: resultListener,
         listenFor: Duration(seconds: 10),
@@ -245,6 +246,7 @@ class _MyAppState extends State<MyApp> {
 
   void stopListening() {
     speech.stop();
+    speech.mute(shouldMute: false);
     setState(() {
       level = 0.0;
     });
@@ -252,12 +254,16 @@ class _MyAppState extends State<MyApp> {
 
   void cancelListening() {
     speech.cancel();
+    speech.mute(shouldMute: false);
     setState(() {
       level = 0.0;
     });
   }
 
   void resultListener(SpeechRecognitionResult result) {
+    if (result.finalResult) {
+      speech.mute(shouldMute: false);
+    }
     setState(() {
       lastWords = "${result.recognizedWords} - ${result.finalResult}";
     });
@@ -270,6 +276,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void errorListener(SpeechRecognitionError error) {
+    speech.mute(shouldMute: false);
     setState(() {
       lastError = "${error.errorMsg} - ${error.permanent}";
     });

@@ -164,13 +164,19 @@ public class SpeechToTextPlugin :
                 "stop" -> stopListening(result)
                 "cancel" -> cancelListening(result)
                 "locales" -> locales(result)
+                "mute" -> {
+                    var shouldMute = call.argument<Boolean>("shouldMute")
+                    if (null == shouldMute) {
+                        shouldMute = true
+                    }
+                    mute(shouldMute = shouldMute)
+                }
                 else -> result.notImplemented()
             }
         } catch (exc: Exception) {
             Log.e(logTag, "Unexpected exception", exc)
             result.error(SpeechToTextErrors.unknown.name,
                     "Unexpected exception", exc.localizedMessage)
-            muteAudio(shouldMute = false)
         }
     }
 
@@ -217,7 +223,7 @@ public class SpeechToTextPlugin :
         return !initializedSuccessfully
     }
 
-    private fun muteAudio(shouldMute: Boolean)
+    private fun mute(shouldMute: Boolean)
     {
         val audioManager: AudioManager = pluginContext?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val muteValue = if (shouldMute) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE
@@ -229,7 +235,6 @@ public class SpeechToTextPlugin :
             return
         }
 
-        muteAudio(shouldMute = true)
         debugLog("Start listening")
         setupRecognizerIntent(languageTag, partialResults)
         handler.post {
@@ -254,7 +259,6 @@ public class SpeechToTextPlugin :
         }
         notifyListening(isRecording = false)
         result.success(true)
-        muteAudio(shouldMute = false)
         debugLog("Stop listening done")
     }
 
@@ -270,7 +274,6 @@ public class SpeechToTextPlugin :
         }
         notifyListening(isRecording = false)
         result.success(true)
-        muteAudio(shouldMute = false)
         debugLog("Cancel listening done")
     }
 
@@ -469,7 +472,6 @@ public class SpeechToTextPlugin :
             else -> "error_unknown"
         }
         sendError(errorMsg)
-        muteAudio(shouldMute = false)
     }
 
     private fun debugLog( msg: String ) {

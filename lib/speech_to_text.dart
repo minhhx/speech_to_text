@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -61,6 +62,7 @@ class SpeechToText {
   static const String soundLevelChangeMethod = "soundLevelChange";
   static const String notListeningStatus = "notListening";
   static const String listeningStatus = "listening";
+  static const String muteMethod = 'mute';
 
   static const MethodChannel speechChannel =
       const MethodChannel('plugin.csdcorp.com/speech_to_text');
@@ -205,6 +207,14 @@ class SpeechToText {
     }
     _shutdownListener();
     await channel.invokeMethod('cancel');
+  }
+
+  Future<void> mute({shouldMute = true}) async {
+    if (!_initWorked || Platform.isIOS) {
+      return;
+    }
+    Map<String, dynamic> muteParams = {"shouldMute": shouldMute};
+    await channel.invokeMethod(muteMethod, muteParams);
   }
 
   /// Starts a listening session for speech and converts it to text,
