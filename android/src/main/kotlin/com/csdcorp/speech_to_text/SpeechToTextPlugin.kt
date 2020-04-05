@@ -83,6 +83,7 @@ public class SpeechToTextPlugin :
     private var lastFinalTime: Long = 0
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val defaultLanguageTag: String = Locale.getDefault().toLanguageTag()
+    private var curStreamVolume: Int = AudioManager.ADJUST_UNMUTE
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
 
@@ -226,8 +227,11 @@ public class SpeechToTextPlugin :
     private fun mute(shouldMute: Boolean)
     {
         val audioManager: AudioManager = pluginContext?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val muteValue = if (shouldMute) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE
-        audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, muteValue, 0)
+        if (shouldMute) {
+            curStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        }
+        val muteValue = if (shouldMute) AudioManager.ADJUST_MUTE else curStreamVolume
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, muteValue, 0)
     }
 
     private fun startListening(result: Result, languageTag: String, partialResults: Boolean) {
